@@ -80,9 +80,3 @@ Seed/demo data:
 - Fighters in the same weight class
 - Fights assigned to the event
 - Rankings and quotes for richer public pages
-
-## Honest Notes
-
-- `npm audit` currently reports dependency vulnerabilities. Review them before a production launch.
-- Stripe checkout requires valid frontend and backend Stripe keys.
-- If the backend sleeps on a free host, first API requests may be slow. Mention this if necessary during a live demo.
