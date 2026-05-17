@@ -1,0 +1,117 @@
+require('dotenv').config();
+require('express-async-errors');
+// express
+
+const express = require('express');
+const app = express();
+// rest of the packages
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const mongoSanitize = require('express-mongo-sanitize');
+const fileUpload = require('express-fileupload');
+const path = require('path');
+// database
+const connectDB = require('./db/connect');
+
+//routers
+const authRouter = require('./routes/authRoutes');
+const userRouter = require('./routes/userRoutes');
+const fightFinishRouter = require('./routes/fightFinishRoutes');
+const weightClassesRouter = require('./routes/weightClassesRoutes');
+const fighterRoutesRouter = require('./routes/fighterRoutes');
+const fightRoutesRouter = require('./routes/fightsRoutes');
+const rankedRoutesRouter = require('./routes/rankedRoutes');
+const referRoutesRouter = require('./routes/referRoutes');
+const quoteRoutesRouter = require('./routes/quoteRoutes');
+const arenaRouter = require('./routes/arenaRoutes');
+const seatingLayoutRouter = require('./routes/seatingLayoutRoutes');
+const ticketsRouter = require('./routes/ticketsRoutes');
+const miniEventRouter = require('./routes/miniEventRoutes');
+const eventsRouter = require('./routes/eventsRoutes');
+
+// middleware
+const notFoundMiddleware = require('./middleware/not-found');
+const errorHandlerMiddleware = require('./middleware/error-handler');
+
+const allowedOrigins = (
+  process.env.CLIENT_ORIGIN || 'http://localhost:5173'
+)
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+for (const localOrigin of [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+]) {
+  if (!allowedOrigins.includes(localOrigin)) {
+    allowedOrigins.push(localOrigin);
+  }
+}
+
+app.use(fileUpload());
+app.use(morgan('dev'));
+app.use(mongoSanitize());
+app.use(express.json());
+app.use(cookieParser(process.env.JWT_SECRET));
+app.use(
+  express.static(path.join(__dirname, 'public'))
+);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+    ],
+  })
+);
+
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/fightFinish', fightFinishRouter);
+app.use('/api/v1/fighters', fighterRoutesRouter);
+app.use(
+  '/api/v1/weightClasses',
+  weightClassesRouter
+);
+app.use('/api/v1/fights', fightRoutesRouter);
+app.use('/api/v1/ranked', rankedRoutesRouter);
+app.use('/api/v1/refers', referRoutesRouter);
+app.use('/api/v1/quotes', quoteRoutesRouter);
+app.use('/api/v1/arena', arenaRouter);
+app.use(
+  '/api/v1/seatingLayout',
+  seatingLayoutRouter
+);
+app.use('/api/v1/tickets', ticketsRouter);
+app.use('/api/v1/mini-events', miniEventRouter);
+app.use('/api/v1/events', eventsRouter);
+
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
+
+const port = process.env.PORT || 5000;
+const start = async () => {
+  try {
+    await connectDB(process.env.MONGO_URL);
+    app.listen(port, () =>
+      console.log(
+        `Server is listening on port ${port}...`
+      )
+    );
+  } catch (error) {
+    console.error('Database connection failed:', error.message);
+    process.exit(1);
+  }
+};
+
+start();
