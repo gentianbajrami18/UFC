@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "creating a web app with node and react for UFC",
   "main": "app.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
