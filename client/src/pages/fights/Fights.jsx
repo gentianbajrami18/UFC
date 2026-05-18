@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import Pagination from "../../components/Pagination";
 import AdminPageShell from "../../components/AdminPageShell";
+import StatusState from "../../components/StatusState";
 
 const getAllFights = () => {
   return {
@@ -39,10 +40,12 @@ const Fights = () => {
   };
 
   const handleSearch = (e) => {
+    const searchValue = e.target.value.toLowerCase();
     if (e.target.value) {
       const filteredFights = data.fights.filter((fight) =>
-        fight.fighter1ID.fighterName.toLowerCase().includes(e.target.value.toLowerCase()) ||
-        fight.fighter2ID.fighterName.toLowerCase().includes(e.target.value.toLowerCase())
+        fight.fighter1ID?.fighterName?.toLowerCase().includes(searchValue) ||
+        fight.fighter2ID?.fighterName?.toLowerCase().includes(searchValue) ||
+        fight.eventID?.name?.toLowerCase().includes(searchValue)
       );
       setFights(filteredFights);
     } else {
@@ -79,19 +82,35 @@ const Fights = () => {
       ]}
     >
     <Wrapper>
+      {fights.length === 0 && (
+        <StatusState
+          variant="compact"
+          eyebrow="Fights"
+          title="No fights found"
+          message="Create a fight or adjust the search to see bout records here."
+        />
+      )}
       <div className="fights">
         {getPaginatedFights().map((fight) => {
           const { eventID, fighter1ID, fighter2ID, winnerID, finishID, weightClassID, round, seconds, minute } = fight;
+          const fighter1Name = fighter1ID?.fighterName || 'TBD fighter';
+          const fighter2Name = fighter2ID?.fighterName || 'TBD fighter';
+          const winnerName = winnerID?.fighterName || 'N/A';
+          const eventName = eventID?.name || 'Unassigned event';
+          const weightClassName = weightClassID?.className || 'Open weight';
+          const finishType = finishID?.finishType || 'Method pending';
+          const hasResult = Boolean(winnerID);
+
           return <article key={fight._id} className="fight" >
             <div className="fight-head">
-              <p>{weightClassID.className}</p>
-              <h2>{eventID.name}</h2>
-              <h4>{fighter1ID.fighterName} vs {fighter2ID.fighterName}</h4>
+              <p>{weightClassName}</p>
+              <h2>{eventName}</h2>
+              <h4>{fighter1Name} vs {fighter2Name}</h4>
             </div>
             <div className="info">
-              <p>Winner: <span>{winnerID ? winnerID.fighterName : "N/A"}</span></p>
-              {winnerID && <p className="time">Time: <span>{round} round, {minute} minute, {seconds} seconds</span></p>}
-              {winnerID && <p className="method">Method: <span>{finishID.finishType}</span></p>}
+              <p>Winner: <span>{winnerName}</span></p>
+              {hasResult && <p className="time">Time: <span>{round || 'N/A'} round, {minute ?? 'N/A'} minute, {seconds ?? 'N/A'} seconds</span></p>}
+              {hasResult && <p className="method">Method: <span>{finishType}</span></p>}
             </div>
             <div className="actions">
               <Link

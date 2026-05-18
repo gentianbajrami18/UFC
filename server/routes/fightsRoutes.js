@@ -16,8 +16,8 @@ const {
 
 // Admin-only routes for fights
 router.get('/', [authenticateUser], getAllFights);
-router.get('/:id', [authenticateUser], getOneFight);
 router.get('/fighter/:fighterId', [authenticateUser], getAllFightsByFighterId);
+router.get('/:id', [authenticateUser], getOneFight);
 router.post(
   '/',
   [authenticateUser, authorizePermissions('admin')],
