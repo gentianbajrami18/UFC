@@ -10,6 +10,7 @@ const {
 const {
   authenticateUser,
   authorizePermissions,
+  preventDemoAdminDeletes,
 } = require('../middleware/authentication');
 
 const router = express.Router();
@@ -28,7 +29,7 @@ router.patch(
 router.get('/:id', [authenticateUser, authorizePermissions('admin')], getOne);
 router.delete(
   '/:id',
-  [authenticateUser, authorizePermissions('admin')],
+  [authenticateUser, authorizePermissions('admin'), preventDemoAdminDeletes],
   deleteRefer
 );
 

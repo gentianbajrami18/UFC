@@ -2,6 +2,7 @@ const express = require('express');
 const {
   authenticateUser,
   authorizePermissions,
+  preventDemoAdminDeletes,
 } = require('../middleware/authentication');
 const {
   getAllUsers,
@@ -27,7 +28,7 @@ router.patch(
 router.get('/:id', [authenticateUser], getUser);
 router.delete(
   '/:id',
-  [authenticateUser, authorizePermissions('admin')],
+  [authenticateUser, authorizePermissions('admin'), preventDemoAdminDeletes],
   deleteUser
 );
 

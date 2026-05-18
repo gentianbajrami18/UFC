@@ -9,6 +9,7 @@ const {
 const {
   authenticateUser,
   authorizePermissions,
+  preventDemoAdminDeletes,
 } = require('../middleware/authentication');
 
 const router = express.Router();
@@ -31,6 +32,7 @@ router.delete(
   '/:id',
   authenticateUser,
   authorizePermissions('admin'),
+  preventDemoAdminDeletes,
   deleteMiniEvent
 );
 

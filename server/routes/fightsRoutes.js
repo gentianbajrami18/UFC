@@ -11,6 +11,7 @@ const {
 const {
   authenticateUser,
   authorizePermissions,
+  preventDemoAdminDeletes,
 } = require('../middleware/authentication');
 
 // Admin-only routes for fights
@@ -29,7 +30,7 @@ router.patch(
 );
 router.delete(
   '/:id',
-  [authenticateUser, authorizePermissions('admin')],
+  [authenticateUser, authorizePermissions('admin'), preventDemoAdminDeletes],
   deleteFight
 );
 

@@ -1,7 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useAppContext } from '../context/AppContext';
 
 const AdminPageShell = ({ eyebrow, title, description, action, stats = [], children }) => {
+  const { user } = useAppContext();
+
   return (
     <Wrapper>
       <header className="admin-page-hero">
@@ -21,6 +24,11 @@ const AdminPageShell = ({ eyebrow, title, description, action, stats = [], child
           </div>
         )}
       </header>
+      {user?.isDemoAdmin && (
+        <div className="demo-delete-note">
+          Demo admin can create and edit records. Delete actions are blocked to protect the live demo data.
+        </div>
+      )}
       {(action) && <div className="admin-toolbar">{action}</div>}
       {children}
     </Wrapper>
@@ -95,6 +103,16 @@ const Wrapper = styled.main`
     border-radius: 8px;
     background: var(--white);
     box-shadow: 0 12px 30px rgba(15, 15, 18, 0.06);
+  }
+  .demo-delete-note {
+    margin: 1.25rem 0 0;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(210, 10, 10, 0.24);
+    border-radius: 8px;
+    background: rgba(210, 10, 10, 0.08);
+    color: #7a0808;
+    font-size: 0.9rem;
+    font-weight: 800;
   }
   .admin-create,
   .admin-action {

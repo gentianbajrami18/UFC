@@ -11,6 +11,7 @@ const {
 const {
   authenticateUser,
   authorizePermissions,
+  preventDemoAdminDeletes,
 } = require('../middleware/authentication');
 
 const router = express.Router();
@@ -38,7 +39,7 @@ router.get(
 );
 router.delete(
   '/:id',
-  [authenticateUser, authorizePermissions('admin')],
+  [authenticateUser, authorizePermissions('admin'), preventDemoAdminDeletes],
   deleteSeatingLayout
 );
 

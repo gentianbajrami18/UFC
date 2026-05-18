@@ -10,6 +10,7 @@ const {
 const {
   authenticateUser,
   authorizePermissions,
+  preventDemoAdminDeletes,
 } = require("../middleware/authentication");
 
 // Admin-only routes for ranked entries
@@ -27,7 +28,7 @@ router.patch(
 );
 router.delete(
   "/:id",
-  [authenticateUser, authorizePermissions("admin")],
+  [authenticateUser, authorizePermissions("admin"), preventDemoAdminDeletes],
   deleteRanked,
 );
 

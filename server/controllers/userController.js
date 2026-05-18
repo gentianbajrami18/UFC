@@ -30,7 +30,9 @@ const getUser = async (req, res) => {
     throw new NotFoundError(`User with id ${id} not found`);
   }
   checkPermissions(req.user, user._id);
-  res.status(StatusCodes.OK).json({ user });
+  const currentUser = user.toObject();
+  currentUser.isDemoAdmin = createTokenUser(user).isDemoAdmin;
+  res.status(StatusCodes.OK).json({ user: currentUser });
 };
 const showMe = async (req, res) => {
   const id = req.user.userId;
@@ -41,7 +43,9 @@ const showMe = async (req, res) => {
     throw new NotFoundError(`User with id ${id} not found`);
   }
   checkPermissions(req.user, user._id);
-  res.status(StatusCodes.OK).json({ user });
+  const currentUser = user.toObject();
+  currentUser.isDemoAdmin = createTokenUser(user).isDemoAdmin;
+  res.status(StatusCodes.OK).json({ user: currentUser });
 };
 
 const updateUser = async (req, res) => {

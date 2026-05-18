@@ -1,5 +1,6 @@
 const { isTokenValid, attachCookiesToResponse } = require('../utils');
 const Token = require('../models/Token');
+const User = require('../models/User');
 const { UnauthenticatedError, UnauthorizedError } = require('../errors');
 
 const authenticateUser = async (req, res, next) => {
@@ -43,7 +44,28 @@ const authorizePermissions = (...roles) => {
   };
 };
 
+const preventDemoAdminDeletes = async (req, res, next) => {
+  const demoAdminEmail =
+    process.env.DEMO_ADMIN_EMAIL || 'demo-admin@example.com';
+
+  if (req.user?.isDemoAdmin || req.user?.email === demoAdminEmail) {
+    throw new UnauthorizedError(
+      'Demo admin can create and edit, but cannot delete records'
+    );
+  }
+
+  const user = await User.findById(req.user.userId).select('email').lean();
+  if (user?.email === demoAdminEmail) {
+    throw new UnauthorizedError(
+      'Demo admin can create and edit, but cannot delete records'
+    );
+  }
+
+  next();
+};
+
 module.exports = {
   authenticateUser,
   authorizePermissions,
+  preventDemoAdminDeletes,
 };
