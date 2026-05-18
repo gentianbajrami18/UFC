@@ -7,7 +7,6 @@ const Token = require('../models/Token');
 const crypto = require('crypto');
 const { StatusCodes } = require('http-status-codes');
 const {
-  sendVerificationEmail,
   createTokenUser,
   attachCookiesToResponse,
   sendResetPasswordEmail,
@@ -34,36 +33,44 @@ const getClientOrigin = req => {
 };
 
 const register = async (req, res) => {
-  const { firstName, lastName, email, password, country } = req.body;
+  const { firstName, lastName, password, country } = req.body;
+  const email = req.body.email?.toLowerCase().trim();
 
   const emailAlreadyExists = await User.findOne({ email });
   if (emailAlreadyExists) {
+    if (!emailAlreadyExists.isVerified) {
+      emailAlreadyExists.firstName = firstName;
+      emailAlreadyExists.lastName = lastName;
+      emailAlreadyExists.password = password;
+      emailAlreadyExists.country = country;
+      emailAlreadyExists.isVerified = true;
+      emailAlreadyExists.verified = Date.now();
+      emailAlreadyExists.verificationToken = undefined;
+      await emailAlreadyExists.save();
+
+      return res.status(StatusCodes.OK).json({
+        msg: 'Account activated. You can log in now.',
+      });
+    }
+
     throw new BadRequestError('Email already exists');
   }
 
   const role = (await User.countDocuments()) === 0 ? 'admin' : 'user';
-  const verificationToken = crypto.randomBytes(40).toString('hex');
 
-  const user = await User.create({
+  await User.create({
     firstName,
     lastName,
     email,
     password,
     country,
     role,
-    verificationToken,
+    isVerified: true,
+    verified: Date.now(),
   });
-  const origin = getClientOrigin(req);
 
-  await sendVerificationEmail({
-    name: user.firstName,
-    email: user.email,
-    verificationToken: user.verificationToken,
-    origin,
-  });
-  // send verification token back only while testing in postman!!!
   res.status(StatusCodes.CREATED).json({
-    msg: 'Success! Please check your email to verify account',
+    msg: 'Account created. You can log in now.',
   });
 };
 
@@ -124,7 +131,7 @@ const login = async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new UnauthenticatedError('Verification Failed!');
+    throw new UnauthenticatedError('Invalid Credentials');
   }
   const isPasswordCorrect = await user.comparePassword(password);
 

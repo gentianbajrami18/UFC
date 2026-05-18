@@ -10,8 +10,7 @@ export const action = async ({ request }) => {
     const data = Object.fromEntries(formData);
     try {
         const response = await customFetch.post('/auth/register', data);
-        toast.success('Successfully registered')
-        toast.success('Please verify email then login')
+        toast.success(response?.data?.msg || 'Account created. You can log in now.')
         return redirect('/login');
     } catch (error) {
         toast.error(error?.response?.data?.msg);
