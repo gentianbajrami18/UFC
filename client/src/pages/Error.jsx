@@ -5,8 +5,39 @@ import img from '../assets/not-found.svg';
 
 const Error = () => {
   const error = useRouteError();
+  const status = error?.status || error?.response?.status;
+  const serverMessage = error?.response?.data?.msg || error?.data?.msg;
+  const isAuthError = status === 401 || status === 403;
+  const isServerError = !status || status >= 500;
 
-  if (error?.status === 404) {
+  const getErrorCopy = () => {
+    if (isAuthError) {
+      return {
+        eyebrow: 'Session',
+        title: 'Admin access needed',
+        message:
+          serverMessage ||
+          'Your demo session may have expired. Open the admin workspace again to continue exploring the dashboard.',
+      };
+    }
+
+    if (isServerError) {
+      return {
+        eyebrow: 'Backend waking up',
+        title: 'Give it a moment',
+        message:
+          'This demo uses a free backend host, so the first request can be slow if the server was sleeping. Try again in a few seconds.',
+      };
+    }
+
+    return {
+      eyebrow: 'Error',
+      title: 'Something went wrong',
+      message: serverMessage || 'Please try again in a few seconds.',
+    };
+  };
+
+  if (status === 404) {
     return (
       <Wrapper>
         <div className="error-card">
@@ -20,13 +51,21 @@ const Error = () => {
     );
   }
 
+  const copy = getErrorCopy();
+
   return (
     <Wrapper>
       <div className="error-card">
-        <p className="eyebrow">Error</p>
-        <h3>Something went wrong</h3>
-        <p>{error?.response?.data?.msg || 'Please try again later.'}</p>
-        <Link to="/">Back home</Link>
+        <p className="eyebrow">{copy.eyebrow}</p>
+        <h3>{copy.title}</h3>
+        <p>{copy.message}</p>
+        <div className="actions">
+          <button type="button" onClick={() => window.location.reload()}>
+            Try again
+          </button>
+          {isAuthError && <Link to="/login">Open admin demo</Link>}
+          <Link to="/">Back home</Link>
+        </div>
       </div>
     </Wrapper>
   );
@@ -72,17 +111,29 @@ const Wrapper = styled.div`
     margin: 1rem auto 1.5rem;
     color: var(--grey-500);
   }
-  a {
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  a,
+  button {
     display: inline-flex;
     min-height: 46px;
     align-items: center;
     justify-content: center;
+    border: 0;
     background: #171719;
     padding: 0.75rem 1.2rem;
     border-radius: 6px;
     color: white;
+    cursor: pointer;
     font-weight: 900;
     text-transform: uppercase;
+  }
+  button {
+    background: #d20a0a;
   }
 `;
 
